@@ -1,0 +1,930 @@
+@startuml DiagramasSecuenciaPythonForestal
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam responseMessageBelowArrow true
+
+' ============================================================================
+' DIAGRAMA 1: CREAR PLANTACIÓN Y PLANTAR CULTIVOS (Factory Pattern)
+' ============================================================================
+title Secuencia 1: Crear Plantación y Plantar Cultivos
+
+actor Usuario
+participant "main" as Main
+participant ":TierraService" as TierraService
+participant ":Tierra" as Tierra
+participant ":Plantacion" as Plantacion
+participant ":PlantacionService" as PlantacionService
+participant "<<Factory>>\n:CultivoFactory" as Factory
+participant ":Pino" as Pino
+participant ":Cultivo" as Cultivo
+
+Usuario -> Main: ejecutar programa
+activate Main
+
+Main -> TierraService: crear_tierra_con_plantacion(1, 10000.0,\n"Agrelo, Mendoza", "Finca del Madero")
+activate TierraService
+
+TierraService -> Tierra: <<create>>(1, 10000.0, "Agrelo, Mendoza")
+activate Tierra
+Tierra --> TierraService: tierra
+deactivate Tierra
+
+TierraService -> Plantacion: <<create>>(1, "Finca del Madero", 100000, tierra)
+activate Plantacion
+Plantacion --> TierraService: plantacion
+deactivate Plantacion
+
+TierraService -> Tierra: set_finca(plantacion)
+activate Tierra
+Tierra --> TierraService: void
+deactivate Tierra
+
+TierraService --> Main: tierra
+deactivate TierraService
+
+Main -> Tierra: get_finca()
+activate Tierra
+Tierra --> Main: plantacion
+deactivate Tierra
+
+note right of Main
+  Ahora vamos a plantar
+  cultivos usando el
+  Factory Pattern
+end note
+
+Main -> PlantacionService: plantar(plantacion, "Pino", 5)
+activate PlantacionService
+
+loop 5 veces
+    PlantacionService -> Factory: crear_cultivo("Pino")
+    activate Factory
+    
+    Factory -> Factory: _crear_pino()
+    activate Factory
+    
+    Factory -> Pino: <<create>>("Parana")
+    activate Pino
+    Pino --> Factory: pino
+    deactivate Pino
+    
+    Factory --> Factory: pino
+    deactivate Factory
+    
+    Factory --> PlantacionService: cultivo
+    deactivate Factory
+    
+    PlantacionService -> Plantacion: get_cultivos_interno()
+    activate Plantacion
+    Plantacion --> PlantacionService: lista_cultivos
+    deactivate Plantacion
+    
+    PlantacionService -> Plantacion: append(cultivo)
+    activate Plantacion
+    Plantacion --> PlantacionService: void
+    deactivate Plantacion
+end
+
+PlantacionService --> Main: True
+deactivate PlantacionService
+
+Main --> Usuario: Plantación creada con 5 pinos
+deactivate Main
+
+@enduml
+
+' ============================================================================
+' DIAGRAMA 2: SISTEMA DE RIEGO AUTOMATIZADO (Observer Pattern)
+' ============================================================================
+@startuml DiagramaRiegoAutomatizado
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Secuencia 2: Sistema de Riego Automatizado (Observer Pattern)
+
+actor Usuario
+participant "main" as Main
+participant ":TemperaturaReaderTask" as TempTask
+participant ":HumedadReaderTask" as HumTask
+participant ":ControlRiegoTask" as ControlTask
+participant ":PlantacionService" as PlantacionService
+participant ":Plantacion" as Plantacion
+
+Usuario -> Main: iniciar riego automatizado
+activate Main
+
+Main -> TempTask: <<create>>()
+activate TempTask
+TempTask --> Main: tarea_temp
+deactivate TempTask
+
+Main -> HumTask: <<create>>()
+activate HumTask
+HumTask --> Main: tarea_hum
+deactivate HumTask
+
+Main -> ControlTask: <<create>>(tarea_temp, tarea_hum,\nplantacion, plantacion_service)
+activate ControlTask
+
+ControlTask -> TempTask: agregar_observador(self)
+activate TempTask
+note right of TempTask
+  ControlTask se registra
+  como observador de
+  temperatura
+end note
+TempTask --> ControlTask: void
+deactivate TempTask
+
+ControlTask -> HumTask: agregar_observador(self)
+activate HumTask
+note right of HumTask
+  ControlTask se registra
+  como observador de
+  humedad
+end note
+HumTask --> ControlTask: void
+deactivate HumTask
+
+ControlTask --> Main: control_task
+deactivate ControlTask
+
+Main -> TempTask: start()
+activate TempTask
+note right of TempTask
+  Thread daemon iniciado
+  Lectura cada 2 segundos
+end note
+TempTask --> Main: void
+
+Main -> HumTask: start()
+activate HumTask
+note right of HumTask
+  Thread daemon iniciado
+  Lectura cada 3 segundos
+end note
+HumTask --> Main: void
+
+Main -> ControlTask: start()
+activate ControlTask
+note right of ControlTask
+  Thread daemon iniciado
+  Evaluación cada 2.5 segundos
+end note
+ControlTask --> Main: void
+
+...Sistema funcionando...
+
+TempTask -> TempTask: _leer_sensor()
+activate TempTask
+TempTask --> TempTask: 12.5°C
+deactivate TempTask
+
+TempTask -> ControlTask: notificar_observadores(12.5)
+activate ControlTask
+ControlTask -> ControlTask: actualizar(12.5)
+activate ControlTask
+note right of ControlTask
+  Almacena temperatura:
+  _ultima_temperatura = 12.5
+end note
+ControlTask --> ControlTask: void
+deactivate ControlTask
+ControlTask --> TempTask: void
+deactivate ControlTask
+
+HumTask -> HumTask: _leer_sensor()
+activate HumTask
+HumTask --> HumTask: 45%
+deactivate HumTask
+
+HumTask -> ControlTask: notificar_observadores(45.0)
+activate ControlTask
+ControlTask -> ControlTask: actualizar(45.0)
+activate ControlTask
+note right of ControlTask
+  Almacena humedad:
+  _ultima_humedad = 45.0
+end note
+ControlTask --> ControlTask: void
+deactivate ControlTask
+ControlTask --> HumTask: void
+deactivate ControlTask
+
+ControlTask -> ControlTask: run() - evaluación
+activate ControlTask
+
+alt TEMP_MIN_RIEGO <= temp <= TEMP_MAX_RIEGO AND humedad < HUMEDAD_MAX_RIEGO
+    note right of ControlTask
+      Condiciones cumplidas:
+      8°C <= 12.5°C <= 15°C
+      45% < 50%
+      ¡REGAR!
+    end note
+    
+    ControlTask -> PlantacionService: regar(plantacion)
+    activate PlantacionService
+    
+    PlantacionService -> Plantacion: get_cultivos_interno()
+    activate Plantacion
+    Plantacion --> PlantacionService: lista_cultivos
+    deactivate Plantacion
+    
+    loop cada cultivo
+        PlantacionService -> PlantacionService: _absorver_agua_cultivo(cultivo, fecha, temp, humedad)
+        activate PlantacionService
+        note right of PlantacionService
+          Usa Strategy Pattern
+          para calcular absorción
+        end note
+        PlantacionService --> PlantacionService: agua_absorvida
+        deactivate PlantacionService
+        
+        PlantacionService -> Plantacion: set_agua_disponible(agua_actual - agua_absorvida)
+        activate Plantacion
+        Plantacion --> PlantacionService: void
+        deactivate Plantacion
+    end
+    
+    PlantacionService --> ControlTask: True
+    deactivate PlantacionService
+else condiciones NO cumplidas
+    note right of ControlTask
+      No regar todavía
+    end note
+end
+
+ControlTask --> ControlTask: continuar
+deactivate ControlTask
+
+...Después de 5 segundos...
+
+Main -> TempTask: detener()
+activate TempTask
+TempTask --> Main: void
+deactivate TempTask
+
+Main -> HumTask: detener()
+activate HumTask
+HumTask --> Main: void
+deactivate HumTask
+
+Main -> ControlTask: detener()
+ControlTask -> TempTask: eliminar_observador(self)
+activate TempTask
+TempTask --> ControlTask: void
+deactivate TempTask
+
+ControlTask -> HumTask: eliminar_observador(self)
+activate HumTask
+HumTask --> ControlTask: void
+deactivate HumTask
+
+ControlTask --> Main: void
+deactivate ControlTask
+deactivate HumTask
+deactivate TempTask
+
+Main --> Usuario: Sistema de riego detenido
+deactivate Main
+
+@enduml
+
+' ============================================================================
+' DIAGRAMA 3: ABSORCIÓN DE AGUA CON ESTRATEGIAS (Strategy Pattern)
+' ============================================================================
+@startuml DiagramaAbsorcionAgua
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Secuencia 3: Absorción de Agua con Estrategias (Strategy Pattern)
+
+participant ":PlantacionService" as PlantacionService
+participant "<<Singleton>>\n:CultivoServiceRegistry" as Registry
+participant ":PinoService" as PinoService
+participant "<<Strategy>>\n:AbsorcionSeasonalStrategy" as SeasonalStrategy
+participant ":Pino" as Pino
+participant ":LechugaService" as LechugaService
+participant "<<Strategy>>\n:AbsorcionConstanteStrategy" as ConstanteStrategy
+participant ":Lechuga" as Lechuga
+
+activate PlantacionService
+
+PlantacionService -> PlantacionService: regar(plantacion)
+activate PlantacionService
+
+note right of PlantacionService
+  Loop por cada cultivo
+  en la plantación
+end note
+
+PlantacionService -> Registry: absorber_agua(pino, fecha, temp, humedad)
+activate Registry
+
+Registry -> Registry: buscar handler para tipo Pino
+activate Registry
+Registry --> Registry: _absorber_agua_pino
+deactivate Registry
+
+Registry -> PinoService: absorver_agua(pino, fecha, temp, humedad)
+activate PinoService
+
+PinoService -> SeasonalStrategy: calcular_absorcion(fecha, temp, humedad, pino)
+activate SeasonalStrategy
+
+SeasonalStrategy -> SeasonalStrategy: obtener mes de fecha
+activate SeasonalStrategy
+
+alt mes en VERANO (dic-feb)
+    note right of SeasonalStrategy
+      Mes 1 (Enero) = VERANO
+      Retorna: 5 litros
+    end note
+    SeasonalStrategy --> SeasonalStrategy: ABSORCION_SEASONAL_VERANO (5)
+else mes en INVIERNO (mar-nov)
+    note right of SeasonalStrategy
+      Mes 7 (Julio) = INVIERNO
+      Retorna: 2 litros
+    end note
+    SeasonalStrategy --> SeasonalStrategy: ABSORCION_SEASONAL_INVIERNO (2)
+end
+
+deactivate SeasonalStrategy
+
+SeasonalStrategy --> PinoService: agua_absorvida (2)
+deactivate SeasonalStrategy
+
+PinoService -> Pino: get_agua()
+activate Pino
+Pino --> PinoService: agua_actual (2)
+deactivate Pino
+
+PinoService -> Pino: set_agua(agua_actual + agua_absorvida)
+activate Pino
+note right of Pino
+  Nuevo nivel: 2 + 2 = 4 litros
+end note
+Pino --> PinoService: void
+deactivate Pino
+
+PinoService --> Registry: 2
+deactivate PinoService
+
+Registry --> PlantacionService: 2
+deactivate Registry
+
+PlantacionService -> PlantacionService: actualizar agua de plantación
+activate PlantacionService
+PlantacionService --> PlantacionService: void
+deactivate PlantacionService
+
+note right of PlantacionService
+  Ahora procesa una Lechuga
+  con estrategia diferente
+end note
+
+PlantacionService -> Registry: absorber_agua(lechuga, fecha, temp, humedad)
+activate Registry
+
+Registry -> Registry: buscar handler para tipo Lechuga
+activate Registry
+Registry --> Registry: _absorber_agua_lechuga
+deactivate Registry
+
+Registry -> LechugaService: absorver_agua(lechuga, fecha, temp, humedad)
+activate LechugaService
+
+LechugaService -> ConstanteStrategy: calcular_absorcion(fecha, temp, humedad, lechuga)
+activate ConstanteStrategy
+
+note right of ConstanteStrategy
+  Estrategia CONSTANTE
+  Siempre retorna el mismo valor
+  independiente de la temporada
+end note
+
+ConstanteStrategy --> LechugaService: cantidad_constante (1)
+deactivate ConstanteStrategy
+
+LechugaService -> Lechuga: get_agua()
+activate Lechuga
+Lechuga --> LechugaService: agua_actual (1)
+deactivate Lechuga
+
+LechugaService -> Lechuga: set_agua(agua_actual + 1)
+activate Lechuga
+note right of Lechuga
+  Nuevo nivel: 1 + 1 = 2 litros
+end note
+Lechuga --> LechugaService: void
+deactivate Lechuga
+
+LechugaService --> Registry: 1
+deactivate LechugaService
+
+Registry --> PlantacionService: 1
+deactivate Registry
+
+PlantacionService --> PlantacionService: continuar con siguientes cultivos
+deactivate PlantacionService
+deactivate PlantacionService
+
+@enduml
+
+' ============================================================================
+' DIAGRAMA 4: GESTIÓN DE TRABAJADORES Y TAREAS
+' ============================================================================
+@startuml DiagramaTrabajadores
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Secuencia 4: Gestión de Trabajadores y Tareas
+
+actor Usuario
+participant "main" as Main
+participant ":Trabajador" as Trabajador
+participant ":TrabajadorService" as TrabajadorService
+participant ":AptoMedico" as AptoMedico
+participant ":Tarea" as Tarea
+participant ":Herramienta" as Herramienta
+
+Usuario -> Main: asignar tareas a trabajador
+activate Main
+
+Main -> Trabajador: <<create>>(43888734, "Juan Perez", tareas)
+activate Trabajador
+Trabajador --> Main: trabajador
+deactivate Trabajador
+
+note right of Main
+  Por defecto, el trabajador
+  tiene un apto médico básico
+end note
+
+Main -> TrabajadorService: asignar_apto_medico(trabajador, True,\ndate.today(), "Estado: excelente")
+activate TrabajadorService
+
+TrabajadorService -> Trabajador: asignar_apto_medico(True, date.today(), "Estado: excelente")
+activate Trabajador
+
+Trabajador -> AptoMedico: <<create>>(True, date.today(), "Estado: excelente")
+activate AptoMedico
+AptoMedico --> Trabajador: apto_medico
+deactivate AptoMedico
+
+Trabajador -> Trabajador: _apto_medico = apto_medico
+activate Trabajador
+Trabajador --> Trabajador: void
+deactivate Trabajador
+
+Trabajador --> TrabajadorService: void
+deactivate Trabajador
+
+TrabajadorService --> Main: void
+deactivate TrabajadorService
+
+note right of Main
+  Ahora el trabajador va a
+  ejecutar sus tareas
+end note
+
+Main -> Herramienta: <<create>>(1, "Pala", True)
+activate Herramienta
+Herramienta --> Main: herramienta
+deactivate Herramienta
+
+Main -> TrabajadorService: trabajar(trabajador, date.today(), herramienta)
+activate TrabajadorService
+
+TrabajadorService -> Trabajador: get_apto_medico()
+activate Trabajador
+Trabajador --> TrabajadorService: apto_medico
+deactivate Trabajador
+
+TrabajadorService -> AptoMedico: esta_apto()
+activate AptoMedico
+AptoMedico --> TrabajadorService: True
+deactivate AptoMedico
+
+alt Trabajador APTO
+    note right of TrabajadorService
+      El trabajador PUEDE trabajar
+      Procedemos a ejecutar tareas
+    end note
+    
+    TrabajadorService -> Trabajador: get_tareas()
+    activate Trabajador
+    Trabajador --> TrabajadorService: lista_tareas
+    deactivate Trabajador
+    
+    TrabajadorService -> TrabajadorService: sorted(tareas, key=_obtener_id_tarea, reverse=True)
+    activate TrabajadorService
+    note right of TrabajadorService
+      Ordena tareas por ID descendente
+      [Tarea 3, Tarea 2, Tarea 1]
+    end note
+    TrabajadorService --> TrabajadorService: tareas_ordenadas
+    deactivate TrabajadorService
+    
+    loop cada tarea en tareas_ordenadas
+        TrabajadorService -> Tarea: get_fecha_programada()
+        activate Tarea
+        Tarea --> TrabajadorService: fecha
+        deactivate Tarea
+        
+        alt fecha == date.today()
+            note right of TrabajadorService
+              La tarea está programada
+              para HOY, se ejecuta
+            end note
+            
+            TrabajadorService -> Tarea: get_id_tarea()
+            activate Tarea
+            Tarea --> TrabajadorService: id_tarea
+            deactivate Tarea
+            
+            TrabajadorService -> Tarea: get_descripcion()
+            activate Tarea
+            Tarea --> TrabajadorService: descripcion
+            deactivate Tarea
+            
+            TrabajadorService -> Herramienta: get_nombre()
+            activate Herramienta
+            Herramienta --> TrabajadorService: "Pala"
+            deactivate Herramienta
+            
+            note right of TrabajadorService
+              Imprime: "El trabajador Juan Perez
+              realizó la tarea 3 Marcar surcos
+              con herramienta: Pala"
+            end note
+            
+            TrabajadorService -> Tarea: set_completada(True)
+            activate Tarea
+            Tarea --> TrabajadorService: void
+            deactivate Tarea
+        else fecha diferente
+            note right of TrabajadorService
+              Tarea no programada para hoy
+              Se omite
+            end note
+        end
+    end
+    
+    TrabajadorService --> Main: True
+    
+else Trabajador NO APTO
+    note right of TrabajadorService
+      El trabajador NO PUEDE trabajar
+      Retorna False
+    end note
+    
+    TrabajadorService --> Main: False
+end
+
+deactivate TrabajadorService
+
+Main --> Usuario: Tareas ejecutadas exitosamente
+deactivate Main
+
+@enduml
+
+' ============================================================================
+' DIAGRAMA 5: PERSISTENCIA Y RECUPERACIÓN DE DATOS
+' ============================================================================
+@startuml DiagramaPersistencia
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Secuencia 5: Persistencia y Recuperación de Datos
+
+actor Usuario
+participant "main" as Main
+participant ":RegistroForestalService" as RegistroService
+participant ":RegistroForestal" as Registro
+participant "<<module>>\npickle" as Pickle
+participant "<<filesystem>>\ndata/" as FileSystem
+
+Usuario -> Main: persistir registro forestal
+activate Main
+
+Main -> Registro: <<create>>(1, tierra, plantacion,\n"Juan Perez", 50309233.55)
+activate Registro
+Registro --> Main: registro
+deactivate Registro
+
+Main -> RegistroService: persistir(registro)
+activate RegistroService
+
+RegistroService -> RegistroService: verificar directorio "data/"
+activate RegistroService
+
+alt directorio NO existe
+    RegistroService -> FileSystem: os.makedirs("data")
+    activate FileSystem
+    FileSystem --> RegistroService: void
+    deactivate FileSystem
+end
+
+RegistroService --> RegistroService: void
+deactivate RegistroService
+
+RegistroService -> Registro: get_propietario()
+activate Registro
+Registro --> RegistroService: "Juan Perez"
+deactivate Registro
+
+RegistroService -> RegistroService: nombre_archivo = "data/Juan Perez.dat"
+activate RegistroService
+RegistroService --> RegistroService: nombre_archivo
+deactivate RegistroService
+
+RegistroService -> FileSystem: open(nombre_archivo, 'wb')
+activate FileSystem
+FileSystem --> RegistroService: file_handle
+deactivate FileSystem
+
+RegistroService -> Pickle: dump(registro, file_handle)
+activate Pickle
+note right of Pickle
+  Serializa el objeto completo:
+  - RegistroForestal
+  - Tierra
+  - Plantacion
+  - Cultivos
+  - Trabajadores
+end note
+Pickle --> RegistroService: void
+deactivate Pickle
+
+RegistroService -> FileSystem: close(file_handle)
+activate FileSystem
+FileSystem --> RegistroService: void
+deactivate FileSystem
+
+note right of RegistroService
+  Archivo guardado:
+  data/Juan Perez.dat
+end note
+
+RegistroService --> Main: void
+deactivate RegistroService
+
+Main --> Usuario: Registro persistido exitosamente
+deactivate Main
+
+...Más tarde, en otra ejecución...
+
+Usuario -> Main: recuperar registro forestal
+activate Main
+
+Main -> RegistroService: leer_registro("Juan Perez")
+activate RegistroService
+
+RegistroService -> RegistroService: validar propietario no vacío
+activate RegistroService
+
+alt propietario vacío
+    RegistroService -> Main: <<throw>> ValueError
+else propietario válido
+    RegistroService --> RegistroService: continuar
+end
+
+deactivate RegistroService
+
+RegistroService -> RegistroService: nombre_archivo = "data/Juan Perez.dat"
+activate RegistroService
+RegistroService --> RegistroService: nombre_archivo
+deactivate RegistroService
+
+RegistroService -> FileSystem: open(nombre_archivo, 'rb')
+activate FileSystem
+
+alt archivo NO existe
+    FileSystem -> RegistroService: <<throw>> FileNotFoundError
+    RegistroService -> Main: <<throw>> PersistenciaException(ERROR_05)
+else archivo existe
+    FileSystem --> RegistroService: file_handle
+    
+    RegistroService -> Pickle: load(file_handle)
+    activate Pickle
+    
+    alt deserialización exitosa
+        note right of Pickle
+          Deserializa el objeto completo
+          con todas sus relaciones
+        end note
+        Pickle --> RegistroService: registro
+        
+        RegistroService -> FileSystem: close(file_handle)
+        FileSystem --> RegistroService: void
+        
+        note right of RegistroService
+          Registro recuperado con:
+          - Tierra
+          - Plantacion
+          - 20 Cultivos
+          - 2 Trabajadores
+        end note
+        
+        RegistroService --> Main: registro
+        
+    else error de deserialización
+        Pickle -> RegistroService: <<throw>> UnpicklingError
+        RegistroService -> Main: <<throw>> PersistenciaException(ERROR_06)
+    end
+    
+    deactivate Pickle
+end
+
+deactivate FileSystem
+deactivate RegistroService
+
+Main -> RegistroService: mostrar_datos(registro)
+activate RegistroService
+
+RegistroService -> Registro: get_id_padron()
+activate Registro
+Registro --> RegistroService: 1
+deactivate Registro
+
+RegistroService -> Registro: get_propietario()
+activate Registro
+Registro --> RegistroService: "Juan Perez"
+deactivate Registro
+
+RegistroService -> Registro: get_avaluo()
+activate Registro
+Registro --> RegistroService: 50309233.55
+deactivate Registro
+
+note right of RegistroService
+  Imprime toda la información:
+  - Padrón
+  - Propietario
+  - Avalúo
+  - Domicilio
+  - Cultivos plantados
+end note
+
+RegistroService --> Main: void
+deactivate RegistroService
+
+Main --> Usuario: Datos del registro mostrados
+deactivate Main
+
+@enduml
+
+' ============================================================================
+' DIAGRAMA 6: COSECHA Y EMPAQUETADO (Generics)
+' ============================================================================
+@startuml DiagramaCosecha
+!theme plain
+skinparam sequenceMessageAlign center
+
+title Secuencia 6: Cosecha y Empaquetado de Cultivos (Generics)
+
+actor Usuario
+participant "main" as Main
+participant ":FincasService" as FincasService
+participant ":RegistroForestal" as Registro
+participant ":Plantacion" as Plantacion
+participant ":PlantacionService" as PlantacionService
+participant "<<Generic>>\n:Paquete<Lechuga>" as PaqueteLechuga
+participant ":Lechuga" as Lechuga
+
+Usuario -> Main: cosechar lechugas
+activate Main
+
+Main -> FincasService: cosechar_y_empaquetar(Lechuga)
+activate FincasService
+
+FincasService -> PaqueteLechuga: <<create>>()
+activate PaqueteLechuga
+note right of PaqueteLechuga
+  Caja tipo-segura
+  solo para Lechugas
+end note
+PaqueteLechuga --> FincasService: caja
+deactivate PaqueteLechuga
+
+loop cada finca en _fincas
+    FincasService -> Registro: get_plantacion()
+    activate Registro
+    Registro --> FincasService: plantacion
+    deactivate Registro
+    
+    FincasService -> Plantacion: get_cultivos()
+    activate Plantacion
+    Plantacion --> FincasService: lista_cultivos
+    deactivate Plantacion
+    
+    loop cada cultivo en lista_cultivos
+        FincasService -> FincasService: isinstance(cultivo, Lechuga)
+        activate FincasService
+        
+        alt cultivo ES Lechuga
+            note right of FincasService
+              Cultivo del tipo correcto
+              Se añade a la caja
+            end note
+            
+            FincasService -> PaqueteLechuga: add_item(cultivo)
+            activate PaqueteLechuga
+            
+            PaqueteLechuga -> PaqueteLechuga: _productos.append(cultivo)
+            activate PaqueteLechuga
+            note right of PaqueteLechuga
+              Lista tipo-segura:
+              List[Lechuga]
+            end note
+            PaqueteLechuga --> PaqueteLechuga: void
+            deactivate PaqueteLechuga
+            
+            PaqueteLechuga --> FincasService: void
+            deactivate PaqueteLechuga
+            
+        else cultivo NO es Lechuga
+            note right of FincasService
+              Cultivo ignorado
+              (Pino, Olivo, Zanahoria)
+            end note
+        end
+        
+        FincasService --> FincasService: void
+        deactivate FincasService
+    end
+    
+    note right of FincasService
+      Remover las lechugas cosechadas
+      de la plantación
+    end note
+    
+    FincasService -> PlantacionService: consumir(plantacion, Lechuga)
+    activate PlantacionService
+    
+    PlantacionService -> Plantacion: get_cultivos_interno()
+    activate Plantacion
+    Plantacion --> PlantacionService: lista_cultivos
+    deactivate Plantacion
+    
+    PlantacionService -> PlantacionService: filtrar cultivos != Lechuga
+    activate PlantacionService
+    note right of PlantacionService
+      Nueva lista sin Lechugas:
+      [Pino, Pino, Olivo, Zanahoria]
+    end note
+    PlantacionService --> PlantacionService: cultivos_restantes
+    deactivate PlantacionService
+    
+    PlantacionService -> Plantacion: set_cultivos(cultivos_restantes)
+    activate Plantacion
+    Plantacion --> PlantacionService: void
+    deactivate Plantacion
+    
+    PlantacionService --> FincasService: True
+    deactivate PlantacionService
+end
+
+FincasService --> Main: caja (Paquete[Lechuga])
+deactivate FincasService
+
+note right of Main
+  Ahora mostramos el
+  contenido de la caja
+end note
+
+Main -> PaqueteLechuga: mostrar_contenido_caja()
+activate PaqueteLechuga
+
+PaqueteLechuga -> PaqueteLechuga: get_items()
+activate PaqueteLechuga
+PaqueteLechuga --> PaqueteLechuga: _productos
+deactivate PaqueteLechuga
+
+loop cada cultivo en _productos
+    PaqueteLechuga -> Lechuga: __class__.__name__
+    activate Lechuga
+    Lechuga --> PaqueteLechuga: "Lechuga"
+    deactivate Lechuga
+    
+    note right of PaqueteLechuga
+      Imprime:
+      "Cultivo: Lechuga"
+    end note
+end
+
+PaqueteLechuga --> Main: void
+deactivate PaqueteLechuga
+
+note right of Main
+  CONTENIDO DE LA CAJA
+  ____________________
+  Tipo: Lechuga
+  Cantidad: 5
+end note
+
+Main --> Usuario: 5 lechugas cosechadas y empaquetadas
+deactivate Main
+
+@enduml

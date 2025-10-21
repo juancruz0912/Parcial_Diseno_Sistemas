@@ -1,0 +1,590 @@
+@startuml DiagramaClasesPythonForestal
+!theme plain
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+title Sistema de Gestión Forestal - Diagrama de Clases Completo
+
+' ============================================================================
+' PAQUETE: ENTIDADES - CULTIVOS
+' ============================================================================
+package "entidades.cultivos" {
+    abstract class Cultivo {
+        {static} +EDAD_MAXIMA: int = 20
+        -_agua: int
+        -_superficie: float
+        +__init__(agua: int, superficie: float)
+        +get_agua(): int
+        +set_agua(agua: int): void
+        +get_superficie(): float
+        +set_superficie(superficie: float): void
+    }
+
+    abstract class Arbol {
+        {static} -_cant_arboles: int
+        -_id: int
+        -_altura: float
+        +__init__(agua: int, superficie: float, altura: float)
+        +get_id(): int
+        +get_altura(): float
+        +set_altura(altura: float): void
+        {static} +get_cant_arboles(): int
+    }
+
+    abstract class Hortaliza {
+        -_invernadero: bool
+        +__init__(agua: int, superficie: float, invernadero: bool)
+        +is_invernadero(): bool
+        +set_invernadero(invernadero: bool): void
+    }
+
+    class Pino {
+        -_variedad: str
+        +__init__(variedad: str)
+        +get_variedad(): str
+    }
+
+    class Olivo {
+        -_tipo_aceituna: TipoAceituna
+        +__init__(tipo_aceituna: TipoAceituna)
+        +get_tipo_aceituna(): TipoAceituna
+    }
+
+    class Lechuga {
+        -_variedad: str
+        +__init__(variedad: str)
+        +get_variedad(): str
+    }
+
+    class Zanahoria {
+        -_is_baby: bool
+        +__init__(is_baby: bool)
+        +is_baby_carrot(): bool
+        +set_is_baby(is_baby: bool): void
+    }
+
+    enum TipoAceituna {
+        NEGRA
+        VERDE
+        ROJA
+    }
+}
+
+' Relaciones de herencia - Cultivos
+Cultivo <|-- Arbol
+Cultivo <|-- Hortaliza
+Arbol <|-- Pino
+Arbol <|-- Olivo
+Hortaliza <|-- Lechuga
+Hortaliza <|-- Zanahoria
+Olivo --> TipoAceituna : usa
+
+' ============================================================================
+' PAQUETE: ENTIDADES - TERRENOS
+' ============================================================================
+package "entidades.terrenos" {
+    class Tierra {
+        -_id_padron_catastral: int
+        -_superficie: float
+        -_domicilio: str
+        -_finca: Plantacion
+        +__init__(id_padron_catastral: int, superficie: float, domicilio: str)
+        +get_id_padron_catastral(): int
+        +set_id_padron_catastral(id_padron_catastral: int): void
+        +get_superficie(): float
+        +set_superficie(superficie: float): void
+        +get_domicilio(): str
+        +set_domicilio(domicilio: str): void
+        +get_finca(): Plantacion
+        +set_finca(finca: Plantacion): void
+    }
+
+    class Plantacion {
+        -_id: int
+        -_nombre: str
+        -_agua_disponible: int
+        -_situada_en: Tierra
+        -_cultivos: List[Cultivo]
+        -_trabajadores: List[Trabajador]
+        +__init__(id: int, nombre: str, agua: int, tierra: Tierra)
+        +get_nombre(): str
+        +set_nombre(nombre: str): void
+        +get_id(): int
+        +set_id(id: int): void
+        +get_agua_disponible(): int
+        +set_agua_disponible(agua_disponible: int): void
+        +get_situada_en(): Tierra
+        +set_situada_en(situada_en: Tierra): void
+        +get_cultivos(): List[Cultivo]
+        +set_cultivos(cultivos: List[Cultivo]): void
+        +get_trabajadores(): List[Trabajador]
+        +set_trabajadores(trabajadores: List[Trabajador]): void
+        +get_cultivos_interno(): List[Cultivo]
+        +get_trabajadores_interno(): List[Trabajador]
+    }
+
+    class RegistroForestal {
+        -_id_padron: int
+        -_tierra: Tierra
+        -_plantacion: Plantacion
+        -_propietario: str
+        -_avaluo: float
+        +__init__(id_padron: int, tierra: Tierra, plantacion: Plantacion, propietario: str, avaluo: float)
+        +get_id_padron(): int
+        +set_id_padron(id_padron: int): void
+        +get_tierra(): Tierra
+        +get_plantacion(): Plantacion
+        +get_propietario(): str
+        +set_propietario(propietario: str): void
+        +get_avaluo(): float
+        +set_avaluo(avaluo: float): void
+    }
+}
+
+' Relaciones - Terrenos
+Tierra "1" o-- "0..1" Plantacion : tiene >
+Plantacion "1" *-- "0..*" Cultivo : contiene >
+Plantacion --> "1" Tierra : situada en >
+RegistroForestal --> "1" Tierra : registra >
+RegistroForestal --> "1" Plantacion : incluye >
+
+' ============================================================================
+' PAQUETE: ENTIDADES - PERSONAL
+' ============================================================================
+package "entidades.personal" {
+    class Trabajador {
+        -_dni: int
+        -_nombre: str
+        -_tareas: List[Tarea]
+        -_apto_medico: AptoMedico
+        +__init__(dni: int, nombre: str, tareas: List[Tarea])
+        +get_dni(): int
+        +get_nombre(): str
+        +set_nombre(nombre: str): void
+        +get_tareas(): List[Tarea]
+        +set_tareas(tareas: List[Tarea]): void
+        +get_apto_medico(): AptoMedico
+        +set_apto_medico(apto_medico: AptoMedico): void
+        +asignar_apto_medico(apto: bool, fecha_emision: date, observaciones: str): void
+    }
+
+    class Tarea {
+        -_id_tarea: int
+        -_fecha_programada: date
+        -_descripcion: str
+        -_completada: bool
+        +__init__(id_tarea: int, fecha_programada: date, descripcion: str)
+        +get_id_tarea(): int
+        +set_id_tarea(id_tarea: int): void
+        +get_fecha_programada(): date
+        +set_fecha_programada(fecha_programada: date): void
+        +get_descripcion(): str
+        +set_descripcion(descripcion: str): void
+        +is_completada(): bool
+        +set_completada(completada: bool): void
+    }
+
+    class Herramienta {
+        -_id_herramienta: int
+        -_nombre: str
+        -_certificado_hys: bool
+        +__init__(id_herramienta: int, nombre: str, certificado_hys: bool)
+        +get_id_herramienta(): int
+        +get_nombre(): str
+        +set_nombre(nombre: str): void
+        +is_certificado_hys(): bool
+        +set_certificado_hys(certificado_hys: bool): void
+    }
+
+    class AptoMedico {
+        -_apto: bool
+        -_fecha_emision: date
+        -_observaciones: str
+        +__init__(apto: bool, fecha_emision: date, observaciones: str)
+        +esta_apto(): bool
+        +set_apto(apto: bool): void
+        +get_fecha_emision(): date
+        +set_fecha_emision(fecha_emision: date): void
+        +get_observaciones(): str
+        +set_observaciones(observaciones: str): void
+        +get_resumen(): str
+    }
+}
+
+' Relaciones - Personal
+Trabajador "1" *-- "0..*" Tarea : tiene >
+Trabajador "1" o-- "1" AptoMedico : posee >
+Plantacion "1" o-- "0..*" Trabajador : emplea >
+
+' ============================================================================
+' PAQUETE: PATRONES - FACTORY
+' ============================================================================
+package "patrones.factory" {
+    class CultivoFactory <<Factory Method>> {
+        {static} +crear_cultivo(especie: str): Cultivo
+        {static} -_crear_pino(): Pino
+        {static} -_crear_olivo(): Olivo
+        {static} -_crear_lechuga(): Lechuga
+        {static} -_crear_zanahoria(): Zanahoria
+    }
+}
+
+CultivoFactory ..> Cultivo : <<creates>>
+CultivoFactory ..> Pino : <<creates>>
+CultivoFactory ..> Olivo : <<creates>>
+CultivoFactory ..> Lechuga : <<creates>>
+CultivoFactory ..> Zanahoria : <<creates>>
+
+' ============================================================================
+' PAQUETE: PATRONES - STRATEGY
+' ============================================================================
+package "patrones.strategy" {
+    abstract class AbsorcionAguaStrategy <<Strategy>> {
+        {abstract} +calcular_absorcion(fecha: date, temperatura: float, humedad: float, cultivo: Cultivo): int
+    }
+
+    class AbsorcionSeasonalStrategy {
+        +calcular_absorcion(fecha: date, temperatura: float, humedad: float, cultivo: Cultivo): int
+    }
+
+    class AbsorcionConstanteStrategy {
+        -_cantidad: int
+        +__init__(cantidad_constante: int)
+        +calcular_absorcion(fecha: date, temperatura: float, humedad: float, cultivo: Cultivo): int
+    }
+}
+
+AbsorcionAguaStrategy <|-- AbsorcionSeasonalStrategy
+AbsorcionAguaStrategy <|-- AbsorcionConstanteStrategy
+AbsorcionAguaStrategy ..> Cultivo : usa
+
+' ============================================================================
+' PAQUETE: PATRONES - OBSERVER
+' ============================================================================
+package "patrones.observer" {
+    abstract class "Observable<T>" as Observable <<Observer>> {
+        -_observadores: List[Observer[T]]
+        -_lock: Lock
+        +__init__()
+        +agregar_observador(observador: Observer[T]): void
+        +eliminar_observador(observador: Observer[T]): void
+        +notificar_observadores(evento: T): void
+    }
+
+    interface "Observer<T>" as Observer <<Observer>> {
+        {abstract} +actualizar(evento: T): void
+    }
+}
+
+Observable --> Observer : notifica >
+
+' ============================================================================
+' PAQUETE: SERVICIOS - CULTIVOS
+' ============================================================================
+package "servicios.cultivos" {
+    abstract class CultivoService {
+        -_estrategia_absorcion: AbsorcionAguaStrategy
+        +__init__(estrategia_absorcion: AbsorcionAguaStrategy)
+        +mostrar_datos(cultivo: Cultivo): void
+        +absorver_agua(cultivo: Cultivo, fecha: date, temperatura: float, humedad: float): int
+    }
+
+    abstract class ArbolService {
+        +__init__(estrategia_absorcion: AbsorcionAguaStrategy)
+        +crecer(arbol: Arbol, incremento: float): bool
+        -_consumir_agua_por_crecimiento(arbol: Arbol): void
+    }
+
+    class PinoService {
+        +__init__()
+        +cosechar(pino: Pino): bool
+        +secretar_resina(pino: Pino): void
+        +florecer(pino: Pino): bool
+        +absorver_agua(pino: Pino): int
+        +consumir_agua(pino: Pino): int
+        +mostrar_datos(pino: Pino): void
+    }
+
+    class OlivoService {
+        +__init__()
+        +cosechar(olivo: Olivo): bool
+        +florecer(olivo: Olivo): bool
+        +absorver_agua(olivo: Olivo): int
+        +consumir_agua(olivo: Olivo): int
+        +mostrar_datos(olivo: Olivo): void
+    }
+
+    class LechugaService {
+        +__init__()
+        +cosechar(lechuga: Lechuga): bool
+        +absorver_agua(lechuga: Lechuga): int
+        +consumir_agua(lechuga: Lechuga): int
+        +mostrar_datos(lechuga: Lechuga): void
+    }
+
+    class ZanahoriaService {
+        +__init__()
+        +cosechar(zanahoria: Zanahoria): bool
+    }
+
+    class CultivoServiceRegistry <<Singleton>> {
+        {static} -_instance: CultivoServiceRegistry
+        {static} -_lock: Lock
+        -_pino_service: PinoService
+        -_olivo_service: OlivoService
+        -_lechuga_service: LechugaService
+        -_zanahoria_service: ZanahoriaService
+        -_absorber_agua_handlers: Dict
+        -_mostrar_datos_handlers: Dict
+        {static} +__new__(cls)
+        -_inicializar_servicios(): void
+        {static} +get_instance(): CultivoServiceRegistry
+        +absorber_agua(cultivo: Cultivo, fecha: date, temperatura: float, humedad: float): int
+        +mostrar_datos(cultivo: Cultivo): void
+    }
+}
+
+' Relaciones - Servicios Cultivos
+CultivoService <|-- ArbolService
+ArbolService <|-- PinoService
+ArbolService <|-- OlivoService
+CultivoService <|-- LechugaService
+CultivoService <|-- ZanahoriaService
+
+CultivoService --> AbsorcionAguaStrategy : usa >
+PinoService ..> Pino : gestiona
+OlivoService ..> Olivo : gestiona
+LechugaService ..> Lechuga : gestiona
+ZanahoriaService ..> Zanahoria : gestiona
+
+CultivoServiceRegistry --> PinoService : contiene
+CultivoServiceRegistry --> OlivoService : contiene
+CultivoServiceRegistry --> LechugaService : contiene
+CultivoServiceRegistry --> ZanahoriaService : contiene
+
+' ============================================================================
+' PAQUETE: SERVICIOS - TERRENOS
+' ============================================================================
+package "servicios.terrenos" {
+    class TierraService {
+        +crear_tierra_con_plantacion(id_padron_catastral: int, superficie: float, domicilio: str, nombre_plantacion: str): Tierra
+    }
+
+    class PlantacionService {
+        -_cultivo_service_registry: CultivoServiceRegistry
+        +__init__(cultivo_service_registry: CultivoServiceRegistry)
+        +plantar(plantacion: Plantacion, especie: str, cantidad: int): bool
+        +regar(plantacion: Plantacion): bool
+        -_absorver_agua_cultivo(cultivo: Cultivo, fecha: date, temperatura: float, humedad: float): int
+        +consumir(plantacion: Plantacion, tipo_cultivo: Type[T]): bool
+    }
+
+    class RegistroForestalService {
+        -_cultivo_service_registry: CultivoServiceRegistry
+        +__init__(cultivo_service_registry: CultivoServiceRegistry)
+        +mostrar_datos(registro: RegistroForestal): void
+        -_mostrar_datos_cultivo(cultivo: Cultivo): void
+        +persistir(registro: RegistroForestal): void
+        {static} +leer_registro(propietario: str): RegistroForestal
+    }
+}
+
+' Relaciones - Servicios Terrenos
+TierraService ..> Tierra : gestiona
+TierraService ..> Plantacion : crea
+PlantacionService ..> Plantacion : gestiona
+PlantacionService --> CultivoServiceRegistry : usa
+PlantacionService ..> CultivoFactory : usa
+RegistroForestalService ..> RegistroForestal : gestiona
+RegistroForestalService --> CultivoServiceRegistry : usa
+
+' ============================================================================
+' PAQUETE: SERVICIOS - PERSONAL
+' ============================================================================
+package "servicios.personal" {
+    class TrabajadorService {
+        {static} -_obtener_id_tarea(tarea: Tarea): int
+        +trabajar(trabajador: Trabajador, fecha: date, herramienta: Herramienta): bool
+        +asignar_apto_medico(trabajador: Trabajador, apto: bool, fecha_emision: date, observaciones: str): void
+    }
+}
+
+TrabajadorService ..> Trabajador : gestiona
+TrabajadorService ..> Herramienta : usa
+TrabajadorService ..> Tarea : gestiona
+
+' ============================================================================
+' PAQUETE: SERVICIOS - NEGOCIO
+' ============================================================================
+package "servicios.negocio" {
+    class FincasService {
+        -_fincas: List[RegistroForestal]
+        -_plantacion_service: PlantacionService
+        -_cultivo_service_registry: CultivoServiceRegistry
+        +__init__(plantacion_service: PlantacionService, cultivo_service_registry: CultivoServiceRegistry)
+        +add_finca(finca: RegistroForestal): void
+        +remover_finca(finca: RegistroForestal): void
+        +fumigar(id_finca: int, insecticida: str): void
+        +regar(): void
+        +cosechar_y_empaquetar(tipo_cultivo: Type[T]): Paquete[T]
+        -_mostrar_datos_cultivo(cultivo: Cultivo): void
+    }
+
+    class "Paquete<T>" as Paquete {
+        -_id: int
+        -_productos: List[T]
+        +__init__()
+        +add_item(producto: T): void
+        +get_items(): List[T]
+        +mostrar_contenido_caja(): void
+    }
+}
+
+FincasService --> PlantacionService : usa
+FincasService --> CultivoServiceRegistry : usa
+FincasService "1" o-- "0..*" RegistroForestal : gestiona
+FincasService ..> Paquete : crea
+Paquete ..> Cultivo : empaqueta
+
+' ============================================================================
+' PAQUETE: RIEGO
+' ============================================================================
+package "riego.sensores" {
+    class TemperaturaReaderTask {
+        -_ultima_temperatura: float
+        -_stop_event: Event
+        +__init__()
+        +run(): void
+        -_leer_sensor(): float
+        +get_ultima_temperatura(): float
+        +detener(): void
+    }
+
+    class HumedadReaderTask {
+        -_ultima_humedad: float
+        -_stop_event: Event
+        +__init__()
+        +run(): void
+        -_leer_sensor(): float
+        +get_ultima_humedad(): float
+        +detener(): void
+    }
+}
+
+package "riego.control" {
+    class ControlRiegoTask {
+        -_temp_task: TemperaturaReaderTask
+        -_hum_task: HumedadReaderTask
+        -_finca: Plantacion
+        -_plantacion_service: PlantacionService
+        -_stop_event: Event
+        -_ultima_temperatura: float
+        -_ultima_humedad: float
+        +__init__(temp_task, hum_task, finca: Plantacion, plantacion_service: PlantacionService)
+        +actualizar(evento: float): void
+        +run(): void
+        +detener(): void
+    }
+}
+
+' Relaciones - Riego (Observer Pattern)
+Observable <|.. TemperaturaReaderTask
+Observable <|.. HumedadReaderTask
+Observer <|.. ControlRiegoTask
+
+ControlRiegoTask --> TemperaturaReaderTask : observa
+ControlRiegoTask --> HumedadReaderTask : observa
+ControlRiegoTask --> PlantacionService : usa
+ControlRiegoTask ..> Plantacion : riega
+
+' ============================================================================
+' PAQUETE: EXCEPCIONES
+' ============================================================================
+package "excepciones" {
+    class ForestacionException {
+        -_error_code: str
+        -_user_message: str
+        -_cause: Exception
+        +__init__(error_code: str, message: str, user_message: str, cause: Exception)
+        +get_error_code(): str
+        +get_user_message(): str
+        +get_full_message(): str
+        +cause: Exception
+    }
+
+    class SuperficieInsuficienteException {
+        -_tipo_cultivo: str
+        -_superficie_requerida: float
+        -_superficie_disponible: float
+        +__init__(tipo_cultivo: str, superficie_requerida: float, superficie_disponible: float)
+        +get_tipo_cultivo(): str
+        +get_superficie_requerida(): float
+        +get_superficie_disponible(): float
+    }
+
+    class AguaAgotadaException {
+        -_agua_disponible: float
+        -_agua_minima: float
+        +__init__(agua_disponible: float, agua_minima: float)
+        +get_agua_disponible(): float
+        +get_agua_minima(): float
+    }
+
+    class PersistenciaException {
+        -_tipo_operacion: str
+        +__init__(error_code: str, message: str, user_message: str, cause: Exception, tipo_operacion: str)
+        +get_tipo_operacion(): str
+    }
+}
+
+ForestacionException <|-- SuperficieInsuficienteException
+ForestacionException <|-- AguaAgotadaException
+ForestacionException <|-- PersistenciaException
+
+' ============================================================================
+' NOTAS Y LEYENDA
+' ============================================================================
+note top of CultivoServiceRegistry
+  <b>PATRÓN SINGLETON</b>
+  Garantiza una única instancia
+  del registro de servicios.
+  Thread-safe con Lock.
+end note
+
+note top of CultivoFactory
+  <b>PATRÓN FACTORY METHOD</b>
+  Encapsula la creación de
+  cultivos sin exponer
+  clases concretas.
+end note
+
+note top of AbsorcionAguaStrategy
+  <b>PATRÓN STRATEGY</b>
+  Permite intercambiar algoritmos
+  de absorción de agua en tiempo
+  de ejecución.
+end note
+
+note top of Observable
+  <b>PATRÓN OBSERVER</b>
+  Notifica cambios de estado
+  a múltiples observadores.
+  Tipo-seguro con Generics.
+end note
+
+legend right
+  |= Color |= Significado |
+  |<back:#FEFECE> Clase Normal </back>| Entidades y Servicios |
+  |<back:#E3FCE5> Clase Abstracta </back>| Clases base abstractas |
+  |<back:#FCE8E3> Interface </back>| Interfaces y protocolos |
+  |<back:#E8F3FC> Patrón </back>| Implementación de patrón de diseño |
+  
+  <b>Relaciones:</b>
+  --|> Herencia
+  --o Composición
+  --* Agregación
+  ..> Dependencia
+endlegend
+
+@enduml

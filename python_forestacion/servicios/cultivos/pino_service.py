@@ -1,8 +1,17 @@
 from datetime import date
 from python_forestacion.entidades.cultivos.pino import Pino
 from python_forestacion.servicios.cultivos.arbol_service import ArbolService
+from python_forestacion.patrones.strategy.impl.absorcion_seasonal_strategy import AbsorcionSeasonalStrategy
 
 class PinoService(ArbolService):
+    def __init__(self):
+        super().__init__(AbsorcionSeasonalStrategy())
+
+    def cosechar(self, pino: Pino) -> bool:
+        # Pino can be harvested all year round
+        print("Se ha cosechado este pino")
+        return True
+
     def secretar_resina(self, pino: Pino) -> None:
         print("Estoy secretando resina")
 

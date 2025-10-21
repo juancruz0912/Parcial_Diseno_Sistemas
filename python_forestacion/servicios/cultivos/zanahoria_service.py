@@ -1,18 +1,12 @@
 from python_forestacion.entidades.cultivos.zanahoria import Zanahoria
+from python_forestacion.servicios.cultivos.cultivo_service import CultivoService
+from python_forestacion.patrones.strategy.impl.absorcion_constante_strategy import AbsorcionConstanteStrategy
 
-class ZanahoriaService:
-    def desarrollar_semilla(self, zanahoria: Zanahoria) -> None:
-        print("Desarrollando semilla de zanahoria")
+class ZanahoriaService(CultivoService):
+    def __init__(self):
+        super().__init__(AbsorcionConstanteStrategy(2))
 
-    def absorver_agua(self, zanahoria: Zanahoria) -> int:
-        zanahoria.set_agua(zanahoria.get_agua() + 2)
-        return 2
-
-    def consumir_agua(self, zanahoria: Zanahoria) -> int:
-        zanahoria.set_agua(zanahoria.get_agua() - 1)
-        return 1
-
-    def mostrar_datos(self, zanahoria: Zanahoria) -> None:
-        print(f"Cultivo: {zanahoria.__class__.__name__}")
-        if zanahoria.is_baby_carrot():
-            print("Es baby carrot")
+    def cosechar(self, zanahoria: Zanahoria) -> bool:
+        # Zanahoria can be harvested all year round
+        print("Se ha cosechado esta zanahoria")
+        return True

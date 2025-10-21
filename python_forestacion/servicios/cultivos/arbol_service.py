@@ -1,6 +1,11 @@
 from python_forestacion.entidades.cultivos.arbol import Arbol
+from python_forestacion.servicios.cultivos.cultivo_service import CultivoService
+from python_forestacion.patrones.strategy.absorcion_agua_strategy import AbsorcionAguaStrategy
 
-class ArbolService:
+class ArbolService(CultivoService):
+    def __init__(self, estrategia_absorcion: AbsorcionAguaStrategy):
+        super().__init__(estrategia_absorcion)
+
     def crecer(self, arbol: Arbol, incremento: float) -> bool:
         if 0 < incremento < 1:
             arbol.set_altura(arbol.get_altura() + incremento)

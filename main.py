@@ -26,10 +26,6 @@ from python_forestacion.riego.sensores.humedad_reader_task import HumedadReaderT
 from python_forestacion.riego.sensores.temperatura_reader_task import TemperaturaReaderTask
 
 # Servicios
-from python_forestacion.servicios.cultivos.pino_service import PinoService
-from python_forestacion.servicios.cultivos.olivo_service import OlivoService
-from python_forestacion.servicios.cultivos.lechuga_service import LechugaService
-from python_forestacion.servicios.cultivos.zanahoria_service import ZanahoriaService
 from python_forestacion.servicios.cultivos.cultivo_service_registry import CultivoServiceRegistry
 from python_forestacion.servicios.negocio.fincas_service import FincasService
 from python_forestacion.servicios.personal.trabajador_service import TrabajadorService
@@ -47,15 +43,8 @@ def main():
         # INICIALIZAR SERVICIOS (REFACTORIZADO: Dependency Injection)
         # ============================================
 
-        # Crear servicios de cultivos individuales
-        pino_service = PinoService()
-        olivo_service = OlivoService()
-        lechuga_service = LechugaService()
-        zanahoria_service = ZanahoriaService()
-
-        # Crear el Registry Pattern
-        cultivo_service_registry = CultivoServiceRegistry(
-            pino_service, olivo_service, lechuga_service, zanahoria_service)
+        # Obtener la instancia única del Registry Pattern (Singleton)
+        cultivo_service_registry = CultivoServiceRegistry.get_instance()
 
         # Inyectar dependencias en servicios
         tierra_service = TierraService()
@@ -101,6 +90,20 @@ def main():
         tarea_temp.start()
         tarea_hum.start()
         tarea_control.start()
+
+        # Allow irrigation to run for a bit (e.g., 5 seconds)
+        time.sleep(5)
+
+        # Detener sistema de riego
+        print("\nDeteniendo sistema de riego...")
+        tarea_temp.detener()
+        tarea_hum.detener()
+        tarea_control.detener()
+
+        # Wait for threads to finish
+        tarea_temp.join()
+        tarea_hum.join()
+        tarea_control.join()
 
         # ============================================
         # 5. GESTIÓN DE TRABAJADORES (usando servicio)
@@ -161,20 +164,6 @@ def main():
         print("\n9. Leyendo registro persistido...")
         registro_leido = RegistroForestalService.leer_registro("Juan Perez")
         registro_service.mostrar_datos(registro_leido)
-
-        # ============================================
-        # 10. DETENER SISTEMA DE RIEGO
-        # ============================================
-        print("\n10. Deteniendo sistema de riego...")
-        time.sleep(20) # Allow irrigation to run for a bit
-        tarea_temp.detener()
-        tarea_hum.detener()
-        tarea_control.detener()
-
-        # Wait for threads to finish
-        tarea_temp.join()
-        tarea_hum.join()
-        tarea_control.join()
 
         print("\n==============================================")
         print("EJEMPLO COMPLETADO EXITOSAMENTE")

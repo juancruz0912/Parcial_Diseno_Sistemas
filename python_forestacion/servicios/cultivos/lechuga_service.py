@@ -1,7 +1,15 @@
 from python_forestacion.entidades.cultivos.lechuga import Lechuga
+from python_forestacion.servicios.cultivos.cultivo_service import CultivoService
+from python_forestacion.patrones.strategy.impl.absorcion_constante_strategy import AbsorcionConstanteStrategy
 
-class LechugaService:
-    def desarrollar_semilla(self, lechuga: Lechuga) -> None:
+class LechugaService(CultivoService):
+    def __init__(self):
+        super().__init__(AbsorcionConstanteStrategy(1))
+
+    def cosechar(self, lechuga: Lechuga) -> bool:
+        # Lechuga can be harvested all year round
+        print("Se ha cosechado esta lechuga")
+        return True
         print("Desarrollando semilla de lechuga")
 
     def absorver_agua(self, lechuga: Lechuga) -> int:

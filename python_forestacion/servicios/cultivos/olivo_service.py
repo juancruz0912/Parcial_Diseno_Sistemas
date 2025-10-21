@@ -1,8 +1,12 @@
 from datetime import date
 from python_forestacion.entidades.cultivos.olivo import Olivo
 from python_forestacion.servicios.cultivos.arbol_service import ArbolService
+from python_forestacion.patrones.strategy.impl.absorcion_seasonal_strategy import AbsorcionSeasonalStrategy
 
 class OlivoService(ArbolService):
+    def __init__(self):
+        super().__init__(AbsorcionSeasonalStrategy())
+
     def cosechar(self, olivo: Olivo) -> bool:
         mes = date.today().month
         if 5 <= mes <= 7:
@@ -39,5 +43,5 @@ class OlivoService(ArbolService):
 
     def mostrar_datos(self, olivo: Olivo) -> None:
         print(f"Cultivo {olivo.__class__.__name__}")
-        print(f"Fruto: {olivo.get_fruto().name}")
+        print(f"Fruto: {olivo.get_tipo_aceituna().name}")
         print(f"Altura: {olivo.get_altura()}")

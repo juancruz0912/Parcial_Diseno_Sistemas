@@ -4,8 +4,9 @@ from python_forestacion.entidades.terrenos.plantacion import Plantacion
 from python_forestacion.excepciones.agua_agotada_exception import AguaAgotadaException
 from python_forestacion.constantes import TEMP_MIN_RIEGO, TEMP_MAX_RIEGO, HUMEDAD_MAX_RIEGO
 from python_forestacion.patrones.observer.observable import Observer
+from python_forestacion.patrones.observer.eventos.evento_sensor import EventoSensor
 
-class ControlRiegoTask(threading.Thread, Observer[float]):
+class ControlRiegoTask(threading.Thread, Observer[EventoSensor]):
     """Tarea en segundo plano que controla el sistema de riego de forma automática.
 
     Actúa como un Observer, reaccionando a las actualizaciones de temperatura y humedad

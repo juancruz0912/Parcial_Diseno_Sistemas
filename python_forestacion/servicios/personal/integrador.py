@@ -1,3 +1,22 @@
+"""
+Archivo integrador generado automaticamente
+Directorio: C:\Users\juanc\Desktop\Diseno_de_sistemas\PythonForestal\python_forestacion\servicios\personal
+Fecha: 2025-10-21 19:37:21
+Total de archivos integrados: 2
+"""
+
+# ================================================================================
+# ARCHIVO 1/2: __init__.py
+# Ruta: C:\Users\juanc\Desktop\Diseno_de_sistemas\PythonForestal\python_forestacion\servicios\personal\__init__.py
+# ================================================================================
+
+
+
+# ================================================================================
+# ARCHIVO 2/2: trabajador_service.py
+# Ruta: C:\Users\juanc\Desktop\Diseno_de_sistemas\PythonForestal\python_forestacion\servicios\personal\trabajador_service.py
+# ================================================================================
+
 from datetime import date
 from typing import List
 from python_forestacion.entidades.personal.trabajador import Trabajador
@@ -32,3 +51,5 @@ class TrabajadorService:
     def asignar_apto_medico(self, trabajador: Trabajador, apto: bool, fecha_emision: date, observaciones: str) -> None:
         trabajador.asignar_apto_medico(apto, fecha_emision, observaciones)
         print(f"Apto médico actualizado para: {trabajador.get_nombre()}")
+
+

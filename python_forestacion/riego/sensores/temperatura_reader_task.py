@@ -2,8 +2,10 @@ import threading
 import time
 import random
 from python_forestacion.patrones.observer.observable import Observable
+from python_forestacion.patrones.observer.eventos.evento_sensor import EventoSensor
 
-class TemperaturaReaderTask(threading.Thread, Observable[float]):
+
+class TemperaturaReaderTask(threading.Thread, Observable[EventoSensor]):
     """Tarea en segundo plano para leer la temperatura ambiental de forma continua.
 
     Actúa como un Observable en el patrón Observer, notificando a sus observadores

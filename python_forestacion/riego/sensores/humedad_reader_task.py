@@ -2,8 +2,10 @@ import threading
 import time
 import random
 from python_forestacion.patrones.observer.observable import Observable
+from python_forestacion.patrones.observer.eventos.evento_sensor import EventoSensor
 
-class HumedadReaderTask(threading.Thread, Observable[float]):
+
+class HumedadReaderTask(threading.Thread, Observable[EventoSensor]):
     """Tarea en segundo plano para leer la humedad ambiental de forma continua.
 
     Actúa como un Observable en el patrón Observer, notificando a sus observadores

@@ -1,3 +1,22 @@
+"""
+Archivo integrador generado automaticamente
+Directorio: C:\Users\juanc\Desktop\Diseno_de_sistemas\PythonForestal\python_forestacion\patrones\observer
+Fecha: 2025-10-21 19:37:21
+Total de archivos integrados: 3
+"""
+
+# ================================================================================
+# ARCHIVO 1/3: __init__.py
+# Ruta: C:\Users\juanc\Desktop\Diseno_de_sistemas\PythonForestal\python_forestacion\patrones\observer\__init__.py
+# ================================================================================
+
+
+
+# ================================================================================
+# ARCHIVO 2/3: observable.py
+# Ruta: C:\Users\juanc\Desktop\Diseno_de_sistemas\PythonForestal\python_forestacion\patrones\observer\observable.py
+# ================================================================================
+
 from typing import Generic, TypeVar, List
 from abc import ABC, abstractmethod
 from threading import Lock
@@ -49,3 +68,22 @@ class Observable(Generic[T], ABC):
 
         for observador in observadores_copy:
             observador.actualizar(evento)
+
+
+# ================================================================================
+# ARCHIVO 3/3: observer.py
+# Ruta: C:\Users\juanc\Desktop\Diseno_de_sistemas\PythonForestal\python_forestacion\patrones\observer\observer.py
+# ================================================================================
+
+from abc import ABC, abstractmethod
+from typing import Generic, TypeVar
+
+T = TypeVar('T')
+
+class Observer(Generic[T], ABC):
+    """Interfaz para el patron Observer."""
+
+    @abstractmethod
+    def actualizar(self, evento: T) -> None:
+        pass
+

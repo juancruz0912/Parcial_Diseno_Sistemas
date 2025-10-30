@@ -2339,93 +2339,6 @@ if cliente.es_estudiante:
     print(f"   Precio final: ${precio_final:.2f}\n")
 ```
 
-**Principios SOLID aplicados**:
-- **S** - Single Responsibility: Cada estrategia un solo algoritmo
-- **O** - Open/Closed: Abierto a extension, cerrado a modificacion
-- **L** - Liskov: Todas las estrategias son intercambiables
-- **I** - Interface Segregation: Interfaz minima
-- **D** - Dependency Inversion: Entrada depende de abstraccion
-
-**Trazabilidad**: `estrategia_precio.py` lineas 1-30, implementaciones en `impl/`, `main.py` lineas 280-355
-
----
-
-## Resumen de Cambios Realizados
-
-### 🔧 **Correcciones Críticas**
-
-1. **Factory Method (US-TECH-003)**:
-   - ✅ Eliminadas lambdas (ahora métodos estáticos directos)
-   - ✅ Dos alternativas: if/elif o diccionario con getattr
-   - ✅ Consistencia entre documentación y código
-
-2. **Singleton (US-TECH-001)**:
-   - ✅ Implementación mejorada con flag `_permitir_instanciacion`
-   - ✅ Prevención de instanciación directa más robusta
-   - ✅ Thread-safety mantenido
-
-3. **Observer (US-TECH-002)**:
-   - ✅ Cambiado de herencia a **composición**
-   - ✅ Nueva clase `GestorObservadores`
-   - ✅ CineManager delega en lugar de heredar
-   - ✅ Evita conflictos con Singleton
-
-### 📝 **Clarificaciones Agregadas**
-
-4. **US-007 y US-008**:
-   - ✅ US-007 ahora crea **reserva temporal** (5 min)
-   - ✅ US-008 confirma compra y marca **ocupado permanente**
-   - ✅ Flujo claramente diferenciado
-
-5. **US-008**:
-   - ✅ Agregada validación de edad según clasificación
-   - ✅ Nuevas excepciones: `EdadInsuficienteException`
-   - ✅ Implementación de `_validar_edad_cliente()`
-
-6. **US-009**:
-   - ✅ Clarificado que usa `EntradaFactory` internamente
-   - ✅ Transacción atómica (todo o nada)
-   - ✅ Código de ejemplo más completo
-
-7. **US-023**:
-   - ⚠️ Agregada nota sobre limitaciones de thread-safety
-   - ⚠️ Aclarado que `Lock` solo funciona en proceso único
-   - ⚠️ Recomendación para ambientes distribuidos
-
-### 📊 **Mejoras de Documentación**
-
-8. **Estructura general**:
-   - ✅ Mayor claridad en criterios de aceptación
-   - ✅ Ejemplos de código más detallados
-   - ✅ Tablas comparativas agregadas
-   - ✅ Justificaciones técnicas mejoradas
-
-9. **Excepciones**:
-   - ✅ Documentadas todas las excepciones por US
-   - ✅ Mensajes de error más descriptivos
-   - ✅ Manejo de errores consistente
-
-### 🎯 **Historias Funcionales Completas**: 27/27
-- Epic 1: 5 historias ✅
-- Epic 2: 5 historias ✅
-- Epic 3: 4 historias ✅
-- Epic 4: 6 historias ✅
-- Epic 5: 3 historias ✅
-- Técnicas: 4 historias ✅
-
-### 📈 **Métricas del Documento Corregido**
-
-| Métrica | Valor |
-|---------|-------|
-| Total páginas (estimado) | ~45 |
-| Líneas de código ejemplo | ~1,200 |
-| Patrones implementados | 4 |
-| Excepciones documentadas | 12 |
-| Diagramas conceptuales | 3 |
-| Validaciones agregadas | 15+ |
-
----
-
 ## Notas Finales para Implementación
 
 ### ⚠️ **Limitaciones Conocidas**
@@ -2455,10 +2368,6 @@ if cliente.es_estudiante:
 3. Crear API REST (FastAPI)
 4. Implementar CI/CD
 5. Agregar documentación con Sphinx
-
----
-
----
 
 ## Resumen de Cobertura Funcional
 
